@@ -16,6 +16,11 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System.IO;
+using RedditSharp;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Net;
 
 namespace RedditDownloader
 {
@@ -24,6 +29,56 @@ namespace RedditDownloader
     /// </summary>
     public partial class MainWindow : Window
     {
+        /*
+        public void getUserPosts(string folderPath)
+        {
+            var reddit = new Reddit();
+            var user = reddit.GetUser(username);
+            //var user = reddit.GetUser("SckaughtE_D");
+            string link = null;
+            string title = null;
+            var posts = user.Posts.Take(5);
+
+            foreach (var post in posts)
+            {
+                title = post.Title.ToString();
+                link = post.Url.ToString();
+
+                System.Drawing.Image image = DownloadImageFromUrl(link);
+                string rootPath = @"C:\\Users\\Jeremy\\Desktop\\Test";
+                string fileName = System.IO.Path.Combine(rootPath, title + ".png");
+                image.Save(fileName);
+            }
+            
+        }
+        */
+
+        public System.Drawing.Image DownloadImageFromUrl(string imageUrl)
+        {
+            System.Drawing.Image image = null;
+
+            try
+            {
+                System.Net.HttpWebRequest webRequest = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(imageUrl);
+                webRequest.AllowWriteStreamBuffering = true;
+                webRequest.Timeout = 30000;
+
+                System.Net.WebResponse webResponse = webRequest.GetResponse();
+
+                System.IO.Stream stream = webResponse.GetResponseStream();
+
+                image = System.Drawing.Image.FromStream(stream);
+
+                webResponse.Close();
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
+            return image;
+        }
+
         public string defaultLocation = @"C:\Users\";
         public MainWindow()
         {
@@ -42,38 +97,111 @@ namespace RedditDownloader
 
         }
 
+        private void Test_Button(object sender, RoutedEventArgs e)
+        {
+            /*
+            System.Drawing.Image image = DownloadImageFromUrl("https://thumbs.gfycat.com/SharpCourageousDesertpupfish-mobile.mp4");
+            string rootPath = @"C:\\Users\\Jeremy\\Desktop\\Test";
+            string fileName = System.IO.Path.Combine(rootPath, "test" + ".gif");
+            image.Save(fileName);
+            */
+
+            using (var client = new WebClient())
+            {
+                client.DownloadFile("https://v.redd.it/hxxifx1a0zx41/DASH_720", "C:\\Users\\Jeremy\\Desktop\\Test\\test[♥️].mp4");
+            }
+
+        }
         private void Download_Button(object sender, RoutedEventArgs e)
         {
-            verifyUser(textBox_username.Text);
-
+            clearError();
+            InvalidateVisual();
+            if (!verifyUser(textBox_username.Text))
+            {
+                throwError("User Does Not Exist!");
+                return;
+            }
+                
             // Create local folder
             var downloadLoc = textBox_filelocation.Text;
             createFolder(downloadLoc);
+
+            if (!Directory.Exists(downloadLoc))
+                return;
 
             // Create folder for each check box
             bool pic = check_Pictures.IsChecked.Value;
             bool vid = check_Videos.IsChecked.Value;
             bool com = check_Comments.IsChecked.Value;
+            string picLoc = null;
+            string vidLoc = null;
+            string comLoc = null;
 
             if (pic)
             {
-                createFolder(downloadLoc + @"\Pictures");
+                picLoc = downloadLoc + @"\Pictures";
+                createFolder(picLoc);
             }
             if (vid)
             {
-                createFolder(downloadLoc + @"\Videos");
+                vidLoc = downloadLoc + @"\Videos";
+                createFolder(vidLoc);
             }
             if (com)
             {
-                createFolder(downloadLoc + @"\Comments");
+                comLoc = downloadLoc + @"\Comments";
+                createFolder(comLoc);
             }
+
+            var reddit = new Reddit();
+            var user = reddit.GetUser(textBox_username.Text);
+            //var user = reddit.GetUser("SckaughtE_D");
+            string link = null;
+            string title = null;
+            var posts = user.Posts.Take(100);
+
+            foreach (var post in posts)
+            {
+                title = post.Title.ToString();
+                link = post.Url.ToString();
+                //Console.WriteLine(link);
+
+                // Link is a picture
+                if (Regex.Match(link, @"^.*\.(jpg|JPG|png|PNG|jpeg|JPEG)$").Success && pic)
+                {
+                    using (var client = new WebClient())
+                    {
+                        Regex rgx = new Regex("[^a-zA-Z0-9 ]");
+                        title = rgx.Replace(title, "");
+                        Console.WriteLine(picLoc + @"\\" + title + ".png");
+                        client.DownloadFile(link, picLoc + "\\" + title + ".png");
+                    }
+                }
+                // Link is a video/gif TODO: Format v.reddit, gyfcat, redhub(?) links to work propperly
+                if (Regex.Match(link, @"^.*\.(mp4|MP4|gif|GIF|gifv|GIFV)$").Success && pic)
+                {
+                    System.Drawing.Image image = DownloadImageFromUrl(link);
+                    string rootPath = vidLoc;
+                    string fileName = System.IO.Path.Combine(rootPath, title + ".mp4");
+                    image.Save(fileName);
+                }
+            }
+
         }
 
         private void createFolder(string dir)
         {
             if (!Directory.Exists(dir))
             {
-                Directory.CreateDirectory(dir);
+                try
+                {
+                    Directory.CreateDirectory(dir);
+                }
+                catch (Exception ex)
+                {
+                    throwError("Invalid Path or Path Denied");
+                }
+                
             }
         }
 
@@ -88,8 +216,16 @@ namespace RedditDownloader
 
         private bool verifyUser(string username)
         {
-            // TODO: Verify through reddit if the username exists
-            // TODO: regex check for weird characters
+            var reddit = new Reddit();
+            try
+            {
+                var user = reddit.GetUser(username);
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+            clearError();
             return true;
         }
 

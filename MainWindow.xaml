@@ -12,18 +12,19 @@
         </Grid.ColumnDefinitions>
         <TextBox x:Name="textBox_username" HorizontalAlignment="Left" Margin="172,39,0,0" TextWrapping="Wrap" VerticalAlignment="Top" TextChanged="Username_TextChanged" RenderTransformOrigin="0.5,0.5" FontSize="16" Width="151" Height="23"/>
         <Label Content="Download /u/&#x9;&#x9;&#x9;" HorizontalAlignment="Left" Height="42" Margin="60,33,0,0" VerticalAlignment="Top" Width="118" FontSize="16" FontWeight="Bold"/>
-        <Button x:Name="button_changeFileLoc" Content="..." Height="23" Margin="367,108,61,0" VerticalAlignment="Top" Click="ChangeFileLoc_Button"/>
+        <Button x:Name="button_changeFileLoc" Content="..." Height="23" Margin="367,108,0,0" VerticalAlignment="Top" Click="ChangeFileLoc_Button" HorizontalAlignment="Left" Width="41"/>
         <TextBlock x:Name="textBlock_confirmation" HorizontalAlignment="Right" Height="33" Margin="0,236,120,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="236" TextAlignment="Center" FontSize="16"/>
         <Label Content="'s content" HorizontalAlignment="Left" Height="42" Margin="323,33,0,0" VerticalAlignment="Top" Width="85" FontSize="16" FontWeight="Bold"/>
         <TextBlock x:Name="textBlock_error" HorizontalAlignment="Right" Height="33" Margin="0,10,61,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="348" TextAlignment="Center" FontSize="16" TextDecorations="Underline" Foreground="#FFE82525"/>
         <Label Content="Location:" HorizontalAlignment="Left" Height="42" Margin="60,75,0,0" VerticalAlignment="Top" Width="81" FontSize="16" FontWeight="Bold"/>
-        <TextBox x:Name="textBox_filelocation" HorizontalAlignment="Left" Margin="66,108,0,0" TextWrapping="Wrap" VerticalAlignment="Top" TextChanged="Location_TextChanged" RenderTransformOrigin="0.5,0.5" Width="296" Text="Init" Height="23"/>
-        <Button Content="Download" Height="23" Margin="60,192,61,0" VerticalAlignment="Top" Click="Download_Button"/>
+        <TextBox x:Name="textBox_filelocation" HorizontalAlignment="Left" Margin="66,108,0,0" TextWrapping="Wrap" VerticalAlignment="Top" TextChanged="Location_TextChanged" RenderTransformOrigin="0.5,0.5" Width="296" Height="23"/>
+        <Button Content="Download" Height="23" Margin="60,192,0,0" VerticalAlignment="Top" Click="Download_Button" HorizontalAlignment="Left" Width="348"/>
         <Label Content="Content" HorizontalAlignment="Left" Height="42" Margin="60,145,0,0" VerticalAlignment="Top" Width="81" FontSize="16" FontWeight="Bold"/>
         <CheckBox x:Name="check_Pictures" Content="Pictures" HorizontalAlignment="Left" Height="17" Margin="146,153,0,0" VerticalAlignment="Top" Width="82" FontSize="14" Checked="CheckBox_Checked" IsChecked="True"/>
         <CheckBox x:Name="check_Videos" Content="Videos" HorizontalAlignment="Left" Height="17" Margin="233,153,0,0" VerticalAlignment="Top" Width="82" FontSize="14"/>
         <CheckBox x:Name="check_Comments" Content="Comments" HorizontalAlignment="Left" Height="17" Margin="314,153,0,0" VerticalAlignment="Top" Width="91" FontSize="14"/>
         <ProgressBar x:Name="pb_TotalProgress" HorizontalAlignment="Left" Height="16" Margin="60,253,0,0" VerticalAlignment="Top" Width="348" ValueChanged="ProgressBar_ValueChanged"/>
+        <Button Content="Test" Height="23" Margin="60,315,0,0" VerticalAlignment="Top" Click="Test_Button" HorizontalAlignment="Left" Width="108"/>
 
     </Grid>
 </Window>
