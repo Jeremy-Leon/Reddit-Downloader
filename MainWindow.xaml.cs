@@ -21,6 +21,9 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Net;
+using System.Drawing;
+using Image = System.Drawing.Image;
+using System.Security.Cryptography;
 
 namespace RedditDownloader
 {
@@ -158,7 +161,11 @@ namespace RedditDownloader
             //var user = reddit.GetUser("SckaughtE_D");
             string link = null;
             string title = null;
-            var posts = user.Posts.Take(100);
+            var posts = user.Posts.Take(200);
+            Dictionary<int, string> picDict = new Dictionary<int, string>();
+            int i = 0;
+            List<string> dupeList = new List<string>();
+            List<string> dupeTitle = new List<string>();
 
             foreach (var post in posts)
             {
@@ -171,20 +178,58 @@ namespace RedditDownloader
                 {
                     using (var client = new WebClient())
                     {
+                        // Remove any non alphanumeric characters and shorten title
                         Regex rgx = new Regex("[^a-zA-Z0-9 ]");
                         title = rgx.Replace(title, "");
-                        Console.WriteLine(picLoc + @"\\" + title + ".png");
-                        client.DownloadFile(link, picLoc + "\\" + title + ".png");
+                        if(title.Length > 100)
+                            title = title.Substring(0, 100);
+                        if (dupeTitle.Contains(title))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            dupeTitle.Add(title);
+                        }
+
+                        // Download and check for duplicates
+                        string fileLoc = picLoc + "\\" + title + ".png";
+                        client.DownloadFile(link, fileLoc);
+                        Image img = Image.FromFile(fileLoc);
+                        byte[] bytes = (byte[])(new ImageConverter()).ConvertTo(img, typeof(byte[]));
+
+                        string hash;
+                        using (SHA1CryptoServiceProvider sha1 = new SHA1CryptoServiceProvider())
+                        {
+                            hash = Convert.ToBase64String(sha1.ComputeHash(bytes));
+                        }
+
+                        if(picDict.ContainsValue(hash))
+                        {
+                            dupeList.Add(fileLoc);
+                        }
+                        else
+                        {
+                            picDict.Add(i++, hash);
+                        }
+                        
+
                     }
                 }
-                // Link is a video/gif TODO: Format v.reddit, gyfcat, redhub(?) links to work propperly
+                // Link is a video/gif TODO: Format v.reddit, gfycat, redgifs links to work propperly
                 if (Regex.Match(link, @"^.*\.(mp4|MP4|gif|GIF|gifv|GIFV)$").Success && pic)
-                {
+                {/*
                     System.Drawing.Image image = DownloadImageFromUrl(link);
                     string rootPath = vidLoc;
                     string fileName = System.IO.Path.Combine(rootPath, title + ".mp4");
                     image.Save(fileName);
+                    */
                 }
+            }
+            // Delete duplicates
+            foreach (var item in dupeList)
+            {
+                File.Delete(item);
             }
 
         }
@@ -248,6 +293,7 @@ namespace RedditDownloader
             }
             return null;
         }
+
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
